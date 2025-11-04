@@ -1,21 +1,21 @@
 from datetime import datetime
 
 class Student:
-    def _init_(self, student_id, name, seat_no):
+    def __init__(self, student_id, name, seat_no):
         self.student_id = student_id
         self.name = name
         self.seat_no = seat_no
         self.purchase_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.student_id} | {self.name} | Seat: {self.seat_no} | Time: {self.purchase_time}"
 
 
 class LibraryManagementSystem:
-    def _init_(self, total_cabins):
+    def __init__(self, total_cabins):
         self.total_cabins = total_cabins
-        self.students = {}
-        self.filled_cabins = {}
+        self.students = {}        # student_id -> Student
+        self.filled_cabins = {}   # seat_no -> student_id
 
     def book_seat(self, student_id, name):
         free_cabins = self.get_free_cabins()
@@ -34,14 +34,17 @@ class LibraryManagementSystem:
             return
         seat_no = self.students[student_id].seat_no
         del self.students[student_id]
-        del self.filled_cabins[seat_no]
+        # remove seat mapping if present
+        if seat_no in self.filled_cabins:
+            del self.filled_cabins[seat_no]
         print(f"✅ Seat {seat_no} released successfully.")
 
     def get_free_cabins(self):
         return [i for i in range(1, self.total_cabins + 1) if i not in self.filled_cabins]
 
     def get_filled_cabins(self):
-        return list(self.filled_cabins.keys())
+        # return sorted list for consistent output
+        return sorted(self.filled_cabins.keys())
 
     def show_records(self):
         if not self.students:
@@ -53,7 +56,7 @@ class LibraryManagementSystem:
 
 
 # Example usage:
-if _name_ == "_main_":
+if __name__ == "__main__":
     system = LibraryManagementSystem(total_cabins=10)
 
     while True:
@@ -65,15 +68,21 @@ if _name_ == "_main_":
         print("5. Show Filled Cabins")
         print("6. Exit")
 
-        choice = input("Enter your choice: ")
+        choice = input("Enter your choice: ").strip()
 
         if choice == "1":
-            sid = input("Enter student ID: ")
-            name = input("Enter student name: ")
-            system.book_seat(sid, name)
+            sid = input("Enter student ID: ").strip()
+            name = input("Enter student name: ").strip()
+            if not sid or not name:
+                print("❌ Student ID and name are required.")
+            else:
+                system.book_seat(sid, name)
         elif choice == "2":
-            sid = input("Enter student ID to release: ")
-            system.release_seat(sid)
+            sid = input("Enter student ID to release: ").strip()
+            if not sid:
+                print("❌ Student ID is required.")
+            else:
+                system.release_seat(sid)
         elif choice == "3":
             system.show_records()
         elif choice == "4":
